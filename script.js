@@ -279,6 +279,11 @@ function setActiveSection(sectionId) {
   }
 }
 
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  sidebar.classList.remove('collapsed');
+  mainContentMarginFix();
+});
+
 navItems.forEach(item => {
   item.addEventListener('click', () => setActiveSection(item.dataset.section));
 });
