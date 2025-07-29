@@ -207,6 +207,7 @@ const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
 
+
 const profileMenuBtn = document.getElementById('profileMenuBtn');
 
 const darkModeToggle = document.getElementById('darkModeToggle');
@@ -260,6 +261,12 @@ function setActiveSection(sectionId) {
   });
   pageTitleEl.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
   
+    if (sectionId === 'market') {
+    sidebar.classList.remove('collapsed');
+    sidebarOverlay.classList.remove('active');
+    mainContentMarginFix();
+  }
+
   if (sectionId === 'dashboard') {
     initBarChart();
     initPieChart();
@@ -270,22 +277,26 @@ function setActiveSection(sectionId) {
     initTimeOfDayChart();
     initDurationChart();
   } else if (sectionId === 'market') {
-    initCandlestickChart();
+        initCandlestickChart();
   }
   
   if(window.innerWidth <= 991){
-    sidebar.classList.add('collapsed');
+    sidebar.classList.remove('collapsed');
+    sidebarOverlay.classList.remove('active');
     mainContentMarginFix();
   }
 }
 
 document.getElementById('sidebarOverlay').addEventListener('click', () => {
   sidebar.classList.remove('collapsed');
+    sidebarOverlay.classList.remove('active');
   mainContentMarginFix();
 });
 
 navItems.forEach(item => {
-  item.addEventListener('click', () => setActiveSection(item.dataset.section));
+  item.addEventListener('click', () => {
+    setActiveSection(item.dataset.section);
+  }); 
 });
 
 function mainContentMarginFix() {
@@ -305,6 +316,11 @@ sidebarToggle.addEventListener('click', () => {
 sidebarToggleMobile.addEventListener('click', () => {
   sidebar.classList.toggle('collapsed');
   mainContentMarginFix();
+    if(sidebar.classList.contains('collapsed')) {
+    sidebarOverlay.classList.add('active');
+  } else {
+    sidebarOverlay.classList.remove('active');
+  }
 });
 
 profileMenuBtn.addEventListener('click', () => {
@@ -338,7 +354,6 @@ darkModeToggle.addEventListener('click', () => {
   
   initBarChart();
   initPieChart();
-  initLineChart();
   initSymbolWinRateChart();
   initProfitDistributionChart();
   initTimeOfDayChart();
@@ -1124,144 +1139,6 @@ function initLineChart() {
   });
 }
 
-function initLineChart() {
-  const ctxLine = document.getElementById('lineChart').getContext('2d');
-  
-  const range = equityChartRange.value;
-  let daysToShow = 365; // Default to 1 year
-  if (range === '1m') daysToShow = 30;
-  else if (range === '3m') daysToShow = 90;
-  else if (range === '6m') daysToShow = 180;
-  
-  const now = new Date();
-  const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - daysToShow);
-  
-  const filtered = trades.filter(t => new Date(t.date) >= startDate);
-  
-  filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-  let runningBalance = 10000;
-  const equityData = [{ x: startDate, y: runningBalance }];
-  const tradeMarkers = [];
-  
-  filtered.forEach(trade => {
-    runningBalance += trade.profit;
-    equityData.push({
-      x: new Date(trade.date),
-      y: runningBalance
-    });
-    
-    tradeMarkers.push({
-      type: 'point',
-      xValue: new Date(trade.date),
-      yValue: runningBalance,
-      backgroundColor: trade.profit >= 0 ? '#16a34a' : '#dc2626',
-      borderColor: '#ffffff',
-      borderWidth: 2,
-      radius: 4,
-      label: {
-        content: `$${trade.profit >= 0 ? '+' : ''}${trade.profit.toFixed(2)}`,
-        enabled: true,
-        position: trade.profit >= 0 ? 'top' : 'bottom',
-        color: trade.profit >= 0 ? '#16a34a' : '#dc2626',
-        font: {
-          weight: 'bold'
-        }
-      }
-    });
-  });
-  
-  if (lineChartInstance) lineChartInstance.destroy();
-  
-  const isDarkMode = document.body.classList.contains('dark');
-  const lineColor = isDarkMode ? '#3b82f6' : '#2563eb';
-  const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-  const textColor = isDarkMode ? '#e5e7eb' : '#374151';
-  const tickColor = isDarkMode ? '#9ca3af' : '#6b7280';
-  
-  lineChartInstance = new Chart(ctxLine, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: 'Account Balance',
-        data: equityData,
-        borderColor: lineColor,
-        borderWidth: 2,
-        backgroundColor: 'transparent',
-        pointRadius: 0,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-          titleColor: isDarkMode ? '#e5e7eb' : '#111827',
-          bodyColor: isDarkMode ? '#d1d5db' : '#4b5563',
-          borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-          borderWidth: 1,
-          callbacks: {
-            label: function(context) {
-              return `Balance: $${context.parsed.y.toFixed(2)}`;
-            }
-          }
-        },
-        annotation: {
-          annotations: tradeMarkers
-        }
-      },
-      scales: {
-        x: {
-          type: 'time',
-          time: {
-            unit: range === '1m' ? 'day' : range === '3m' ? 'week' : 'month',
-            displayFormats: {
-              day: 'MMM d',
-              week: 'MMM d',
-              month: 'MMM yyyy'
-            }
-          },
-          grid: {
-            color: gridColor
-          },
-          ticks: {
-            color: tickColor
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Account Balance ($)',
-            color: tickColor
-          },
-          grid: {
-            color: gridColor
-          },
-          ticks: {
-            color: tickColor,
-            callback: function(value) {
-              return '$' + value.toLocaleString();
-            }
-          }
-        }
-      },
-      interaction: {
-        mode: 'nearest',
-        axis: 'x',
-        intersect: false
-      }
-    }
-  });
-}
 
 function initSymbolWinRateChart() {
   const ctx = document.getElementById('symbolWinRateChart').getContext('2d');
@@ -1735,10 +1612,16 @@ function initCandlestickChart() {
 }
 
 marketTabs.forEach(tab => {
-  tab.addEventListener('click', () => {
+  tab.addEventListener('click', (e) => {
     marketTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     initCandlestickChart();
+
+        if (window.innerWidth <= 991) {
+      sidebar.classList.remove('collapsed');
+      sidebarOverlay.classList.remove('active');
+      mainContentMarginFix();
+        }
   });
 });
 
@@ -1747,6 +1630,11 @@ timeframeBtns.forEach(btn => {
     timeframeBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     initCandlestickChart();
+        if (window.innerWidth <= 991) {
+      sidebar.classList.remove('collapsed');
+      sidebarOverlay.classList.remove('active');
+      mainContentMarginFix();
+    }
   });
 });
 
@@ -1851,3 +1739,4 @@ loginForm.addEventListener('submit', (e) => {
     alert('Invalid credentials. Use:\nEmail: trader@example.com\nPassword: TradePulse123');
   }
 });
+
