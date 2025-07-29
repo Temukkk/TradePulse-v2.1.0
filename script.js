@@ -204,8 +204,10 @@ const paginationInfoEl = document.getElementById('paginationInfo');
 const pageTitleEl = document.getElementById('pageTitle');
 
 const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
+
 
 
 const profileMenuBtn = document.getElementById('profileMenuBtn');
@@ -241,6 +243,49 @@ const dailyVolumeEl = document.getElementById('dailyVolume');
 
 const navItems = document.querySelectorAll('.sidebar-nav li');
 const contentSections = document.querySelectorAll('.content-section');
+
+function toggleSidebar() {
+  const isOpen = sidebar.classList.contains('active');
+  if (isOpen) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+}
+
+
+function closeSidebar() {
+  sidebar.classList.remove('active');
+  sidebar.classList.add('collapsed');
+  sidebarOverlay.classList.remove('active');
+  document.body.classList.remove('sidebar-open');
+}
+
+sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarToggleMobile.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+function handleResize() {
+  if (window.innerWidth > 991) {
+    sidebar.classList.remove('active', 'collapsed');
+    sidebarOverlay.classList.remove('active');
+    document.body.classList.remove('sidebar-open');
+  }
+}
+
+window.addEventListener('resize', handleResize);
+
+// Initialize
+function initSidebar() {
+  if (window.innerWidth <= 991) {
+    sidebar.classList.remove('active');
+    sidebarOverlay.classList.remove('active');
+  }
+}
+
+initSidebar();
 
 function setActiveSection(sectionId) {
   contentSections.forEach(sec => {
@@ -288,7 +333,7 @@ function setActiveSection(sectionId) {
 }
 
 document.getElementById('sidebarOverlay').addEventListener('click', () => {
-  sidebar.classList.remove('collapsed');
+  sidebar.classList.add('collapsed');
     sidebarOverlay.classList.remove('active');
   mainContentMarginFix();
 });
@@ -300,13 +345,46 @@ navItems.forEach(item => {
 });
 
 function mainContentMarginFix() {
+    const mainContent = document.querySelector('.main-content');
+    
+    if (window.innerWidth > 991) {
+        if (sidebar.classList.contains('collapsed')) {
+            mainContent.style.marginLeft = '0';
+        } else {
+            mainContent.style.marginLeft = '260px';
+        }
+    } else {
+        mainContent.style.marginLeft = '0';
+    }
+}
+// Call this after any sidebar state change
+mainContentMarginFix();
+window.addEventListener('resize', mainContentMarginFix);
+
+// Update mainContentMarginFix function
+function mainContentMarginFix() {
   const mainContent = document.querySelector('.main-content');
-  if(sidebar.classList.contains('collapsed')) {
-    mainContent.classList.add('sidebar-collapsed');
+  
+  if (window.innerWidth > 991) {
+    if (sidebar.classList.contains('collapsed')) {
+      mainContent.style.marginLeft = '0';
+    } else {
+      mainContent.style.marginLeft = '260px';
+    }
   } else {
-    mainContent.classList.remove('sidebar-collapsed');
+    mainContent.style.marginLeft = '0';
   }
 }
+
+// Update sidebar toggle functionality
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  mainContentMarginFix();
+});
+
+// Call this on page load and resize
+window.addEventListener('resize', mainContentMarginFix);
+mainContentMarginFix();
 
 sidebarToggle.addEventListener('click', () => {
   sidebar.classList.toggle('collapsed');
@@ -315,12 +393,8 @@ sidebarToggle.addEventListener('click', () => {
 
 sidebarToggleMobile.addEventListener('click', () => {
   sidebar.classList.toggle('collapsed');
+  sidebarOverlay.classList.toggle('active');
   mainContentMarginFix();
-    if(sidebar.classList.contains('collapsed')) {
-    sidebarOverlay.classList.add('active');
-  } else {
-    sidebarOverlay.classList.remove('active');
-  }
 });
 
 profileMenuBtn.addEventListener('click', () => {
@@ -1739,4 +1813,3 @@ loginForm.addEventListener('submit', (e) => {
     alert('Invalid credentials. Use:\nEmail: trader@example.com\nPassword: TradePulse123');
   }
 });
-

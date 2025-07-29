@@ -856,6 +856,61 @@
       z-index: 2;
     }
     
+    .brokers-section {
+      padding: 6rem 2rem;
+      background: var(--light);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .dark .brokers-section {
+      background: #020617;
+    }
+    
+    .brokers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+      align-items: center;
+    }
+    
+    .broker-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      height: 100px;
+    }
+    
+    .dark .broker-logo {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .broker-logo:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .broker-logo img {
+      max-width: 100%;
+      max-height: 60px;
+      width: auto;
+      height: auto;
+      filter: grayscale(100%);
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+    
+    .broker-logo:hover img {
+      filter: grayscale(0%);
+      opacity: 1;
+    }
+    
     .login-modal {
       position: fixed;
       top: 0;
@@ -1253,6 +1308,10 @@
       .cta-buttons {
         justify-content: center;
       }
+      
+      .brokers-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      }
     }
     
     @media (max-width: 768px) {
@@ -1281,6 +1340,16 @@
       .demo-video iframe {
         height: 300px;
       }
+      
+      .brokers-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+      }
+      
+      .broker-logo {
+        padding: 1rem;
+        height: 80px;
+      }
     }
     
     @media (max-width: 576px) {
@@ -1308,6 +1377,10 @@
       
       .demo-video iframe {
         height: 200px;
+      }
+      
+      .brokers-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -1627,12 +1700,42 @@
     </div>
   </section>
 
+  <section class="brokers-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title animate__animated animate__fadeInUp">Seamless Broker Integrations</h2>
+        <p class="section-subtitle animate__animated animate__fadeInUp">Connect with all major trading platforms</p>
+      </div>
+      
+      <div class="brokers-grid">
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Interactive_Brokers_logo.svg" alt="Interactive Brokers">
+        </div>
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/TD_Ameritrade_logo.svg" alt="TD Ameritrade">
+        </div>
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/E-Trade_logo.svg" alt="E-Trade">
+        </div>
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Fidelity_Investments_logo.svg" alt="Fidelity">
+        </div>
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Charles_Schwab_Corporation_logo.svg" alt="Charles Schwab">
+        </div>
+        <div class="broker-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Robinhood_Logo.png" alt="Robinhood">
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="cta-section">
     <div class="container">
-      <h2 class="cta-title">Ready to Transform Your Trading?</h2>
-      <p class="cta-subtitle">Join thousands of traders who unlocked their full potential with TradePulse Pro</p>
+      <h2 class="cta-title animate__animated animate__fadeInUp">Ready to Transform Your Trading?</h2>
+      <p class="cta-subtitle animate__animated animate__fadeInUp">Join thousands of traders who unlocked their full potential with TradePulse Pro</p>
       <div class="cta-buttons" style="justify-content: center;">
-        <button class="btn btn-primary" id="ctaLoginBtn" style="padding: 1.25rem 3rem;">
+        <button class="btn btn-primary animate__animated animate__pulse animate__infinite" id="ctaLoginBtn" style="padding: 1.25rem 3rem;">
           <span class="material-icons">rocket_launch</span> Start Free Trial
         </button>
       </div>
