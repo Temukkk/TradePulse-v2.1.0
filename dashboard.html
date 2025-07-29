@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TradePulse Pro Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.2.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1"></script>
+</head>
+<body class="light">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1 class="sidebar-logo">TradePulse Pro</h1>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <span class="material-icons">menu</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="active" data-section="dashboard"><span class="material-icons">dashboard</span>Dashboard</li>
+        <li data-section="trades"><span class="material-icons">show_chart</span>Trades</li>
+        <li data-section="analysis"><span class="material-icons">insights</span>Analysis</li>
+        <li data-section="market"><span class="material-icons">candlestick_chart</span>Market Data</li>
+        <li data-section="reports"><span class="material-icons">assessment</span>Reports</li>
+        <li data-section="settings"><span class="material-icons">settings</span>Settings</li>
+      </ul>
+    </nav>
+    <footer class="sidebar-footer">
+      <div class="version">v2.1.0</div>
+      <div>© 2025 TradePulse</div>
+    </footer>
+  </aside>
+  <div class="main-content">
+    <nav class="navbar">
+      <button class="sidebar-toggle" id="sidebarToggleMobile" aria-label="Toggle sidebar">
+        <span class="material-icons">menu</span>
+      </button>
+      <div class="nav-left">
+        <h2 class="page-title" id="pageTitle">Dashboard</h2>
+      </div>
+      <div class="nav-right">
+        <div class="notifications" id="notificationsBtn">
+          <span class="material-icons">notifications</span>
+          <span class="notification-badge">3</span>
+        </div>
+        
+        <button id="darkModeToggle" class="btn-icon" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <span class="material-icons" id="darkModeIcon">dark_mode</span>
+        </button>
+
+        <div class="profile-menu" id="profileMenuBtn" tabindex="0" aria-haspopup="true" aria-expanded="false">
+          <img src="https://i.pravatar.cc/40" alt="User avatar" class="profile-avatar" />
+          <span class="profile-name">Trader</span>
+          <span class="material-icons">arrow_drop_down</span>
+          <ul class="profile-dropdown" id="profileDropdown" role="menu" aria-label="User menu">
+            <li role="menuitem" tabindex="-0.5"><span class="material-icons">person</span>Profile</li>
+            <li role="menuitem" tabindex="-1"><span class="material-icons">settings</span>Settings</li>
+            <li role="menuitem" tabindex="-1"><span class="material-icons">logout</span>Logout</li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <section class="content-section active" id="dashboardSection">
+      <section class="stats-cards">
+        <div class="card card-primary">
+          <div class="card-icon"><span class="material-icons">timeline</span></div>
+          <h3>Total Trades</h3>
+          <p id="totalTrades">0</p>
+          <small>Since last month <span id="tradesChange" class="change-badge positive">+0%</span></small>
+        </div>
+        <div class="card card-success">
+          <div class="card-icon"><span class="material-icons">emoji_events</span></div>
+          <h3>Win Rate</h3>
+          <p id="winRate">0%</p>
+          <small>Percentage of wins <span id="winRateChange" class="change-badge positive">+0%</span></small>
+        </div>
+        <div class="card card-info">
+          <div class="card-icon"><span class="material-icons">trending_up</span></div>
+          <h3>Avg Profit</h3>
+          <p id="avgProfit">$0.00</p>
+          <small>Per trade <span id="avgProfitChange" class="change-badge positive">+0%</span></small>
+        </div>
+        <div class="card card-warning">
+          <div class="card-icon"><span class="material-icons">show_chart</span></div>
+          <h3>Profit Factor</h3>
+          <p id="profitFactor">0.00</p>
+          <small>Gains vs Losses</small>
+        </div>
+      </section>
+
+      <section class="charts">
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Trades by Month</h3>
+            <select id="tradesChartRange" class="chart-range-selector">
+              <option value="3m">3 Months</option>
+              <option value="6m">6 Months</option>
+              <option value="1y" selected>1 Year</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Performance Metrics</h3>
+          </div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </section>
+
+      <section class="performance-section">
+        <div class="chart-container full-width">
+          <div class="chart-header">
+            <h3>Equity Curve</h3>
+            <select id="equityChartRange" class="chart-range-selector">
+              <option value="1m">1 Month</option>
+              <option value="3m">3 Months</option>
+              <option value="6m">6 Months</option>
+              <option value="1y" selected>1 Year</option>
+            </select>
+          </div>
+          <canvas id="lineChart"></canvas>
+        </div>
+      </section>
+    </section>
+
+    <section class="content-section" id="tradesSection" aria-hidden="true">
+      <header class="trades-header">
+        <h2>Trade Journal</h2>
+        <button class="btn-primary" id="addTradeBtn">
+          <span class="material-icons">add</span> New Trade
+        </button>
+      </header>
+      <div class="filters">
+        <div class="search-container">
+          <span class="material-icons">search</span>
+          <input type="text" id="searchInput" placeholder="Search trades..." aria-label="Search trades" />
+        </div>
+        <select id="filterSymbol" aria-label="Filter by symbol">
+          <option value="">All Symbols</option>
+        </select>
+        <select id="filterType" aria-label="Filter by type">
+          <option value="">All Types</option>
+          <option value="Long">Long</option>
+          <option value="Short">Short</option>
+        </select>
+        <select id="filterTimeframe" aria-label="Filter by timeframe">
+          <option value="">All Timeframes</option>
+          <option value="1m">Last Month</option>
+          <option value="3m">Last 3 Months</option>
+          <option value="6m">Last 6 Months</option>
+          <option value="1y">Last Year</option>
+        </select>
+      </div>
+      <div class="table-container">
+        <table class="trades-table" aria-describedby="tradesDescription">
+          <caption id="tradesDescription">Table showing recent trades</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Symbol</th>
+              <th scope="col">Type</th>
+              <th scope="col">Size</th>
+              <th scope="col">Entry</th>
+              <th scope="col">Exit</th>
+              <th scope="col">Profit</th>
+              <th scope="col">ROI</th>
+              <th scope="col">Notes</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tradesBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination-container">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+    <section class="content-section" id="analysisSection" aria-hidden="true">
+      <h2>Trade Analysis</h2>
+      <div class="analysis-grid">
+        <div class="chart-container">
+          <h3>Win Rate by Symbol</h3>
+          <canvas id="symbolWinRateChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Profit Distribution</h3>
+          <canvas id="profitDistributionChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Performance by Time of Day</h3>
+          <canvas id="timeOfDayChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Trade Duration Analysis</h3>
+          <canvas id="durationChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="marketSection" aria-hidden="true">
+      <h2>Market Data</h2>
+      <div class="market-tabs">
+        <button class="market-tab active" data-symbol="BTCUSD">BTC/USD</button>
+        <button class="market-tab" data-symbol="ETHUSD">ETH/USD</button>
+        <button class="market-tab" data-symbol="SOLUSD">SOL/USD</button>
+        <button class="market-tab" data-symbol="SPX">S&P 500</button>
+      </div>
+      <div class="chart-container full-width">
+        <div class="chart-header">
+          <h3 id="marketChartTitle">BTC/USD - Daily</h3>
+          <div class="timeframe-selector">
+            <button class="timeframe-btn active" data-tf="1d">1D</button>
+            <button class="timeframe-btn" data-tf="1w">1W</button>
+            <button class="timeframe-btn" data-tf="1m">1M</button>
+            <button class="timeframe-btn" data-tf="3m">3M</button>
+            <button class="timeframe-btn" data-tf="1y">1Y</button>
+          </div>
+        </div>
+        <canvas id="candlestickChart"></canvas>
+      </div>
+      <div class="market-stats">
+        <div class="market-stat">
+          <span class="stat-label">Current Price</span>
+          <span class="stat-value" id="currentPrice">$0.00</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">24h Change</span>
+          <span class="stat-value" id="dailyChange">0.00%</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">24h High</span>
+          <span class="stat-value" id="dailyHigh">$0.00</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">24h Low</span>
+          <span class="stat-value" id="dailyLow">$0.00</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">Volume</span>
+          <span class="stat-value" id="dailyVolume">0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="reportsSection" aria-hidden="true">
+      <h2>Reports</h2>
+      <div class="reports-grid">
+        <div class="report-card">
+          <div class="report-icon"><span class="material-icons">summarize</span></div>
+          <h3>Monthly Performance</h3>
+          <p>Detailed breakdown of your monthly trading performance</p>
+          <button class="btn-outline">Generate Report</button>
+        </div>
+        <div class="report-card">
+          <div class="report-icon"><span class="material-icons">assessment</span></div>
+          <h3>Strategy Analysis</h3>
+          <p>Evaluate the effectiveness of your trading strategies</p>
+          <button class="btn-outline">Generate Report</button>
+        </div>
+        <div class="report-card">
+          <div class="report-icon"><span class="material-icons">insights</span></div>
+          <h3>Risk Assessment</h3>
+          <p>Analyze your risk exposure and drawdowns</p>
+          <button class="btn-outline">Generate Report</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="settingsSection" aria-hidden="true">
+      <h2>Settings</h2>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3><span class="material-icons">account_circle</span> Profile</h3>
+          <form class="settings-form">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" value="Trader" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" value="trader@example.com" />
+            </div>
+            <button type="submit" class="btn-primary">Update Profile</button>
+          </form>
+        </div>
+        <div class="settings-card">
+          <h3><span class="material-icons">security</span> Security</h3>
+          <form class="settings-form">
+            <div class="form-group">
+              <label for="currentPassword">Current Password</label>
+              <input type="password" id="currentPassword" />
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input type="password" id="newPassword" />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" />
+            </div>
+            <button type="submit" class="btn-primary">Change Password</button>
+          </form>
+        </div>
+        <div class="settings-card">
+          <h3><span class="material-icons">palette</span> Appearance</h3>
+          <div class="appearance-options">
+            <div class="theme-option">
+              <input type="radio" id="lightTheme" name="theme" value="light" checked>
+              <label for="lightTheme">Light Mode</label>
+            </div>
+            <div class="theme-option">
+              <input type="radio" id="darkTheme" name="theme" value="dark">
+              <label for="darkTheme">Dark Mode</label>
+            </div>
+            <div class="theme-option">
+              <input type="radio" id="systemTheme" name="theme" value="system">
+              <label for="systemTheme">System Default</label>
+            </div>
+          </div>
+          <h4>Chart Styles</h4>
+          <select id="chartStyle" class="form-select">
+            <option value="default">Default</option>
+            <option value="minimal">Minimal</option>
+            <option value="dark">Dark Charts</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+    </section>
+    <div class="modal" id="tradeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+      <div class="modal-content">
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+        <h3 id="modalTitle">Trade Details</h3>
+        <div id="modalBody">
+        </div>
+      </div>
+    </div>
+    <div class="modal" id="addTradeModal" role="dialog" aria-modal="true" aria-labelledby="addTradeModalTitle" aria-hidden="true">
+      <div class="modal-content">
+        <button class="modal-close" id="addTradeModalCloseBtn" aria-label="Close modal">&times;</button>
+        <h3 id="addTradeModalTitle">Add New Trade</h3>
+        <form id="addTradeForm" class="trade-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tradeDate">Date</label>
+              <input type="date" id="tradeDate" required />
+            </div>
+            <div class="form-group">
+              <label for="tradeSymbol">Symbol</label>
+              <select id="tradeSymbol" required>
+                <option value="">Select Symbol</option>
+                <option value="BTCUSD">BTC/USD</option>
+                <option value="ETHUSD">ETH/USD</option>
+                <option value="SOLUSD">SOL/USD</option>
+                <option value="SPX">S&P 500</option>
+                <option value="AAPL">Apple</option>
+                <option value="MSFT">Microsoft</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tradeType">Type</label>
+              <select id="tradeType" required>
+                <option value="">Select Type</option>
+                <option value="Long">Long</option>
+                <option value="Short">Short</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tradeSize">Size</label>
+              <input type="number" id="tradeSize" placeholder="1.0" step="0.1" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tradeEntry">Entry Price</label>
+              <input type="number" id="tradeEntry" placeholder="0.00" step="0.01" required />
+            </div>
+            <div class="form-group">
+              <label for="tradeExit">Exit Price</label>
+              <input type="number" id="tradeExit" placeholder="0.00" step="0.01" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tradeNotes">Notes</label>
+            <textarea id="tradeNotes" rows="3" placeholder="Trade rationale, setup, etc."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-outline" id="cancelTradeBtn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Trade</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="notifications-panel" id="notificationsPanel">
+      <div class="notifications-header">
+        <h3>Notifications</h3>
+        <button class="btn-icon" id="clearNotificationsBtn" title="Clear all">
+          <span class="material-icons">clear_all</span>
+        </button>
+      </div>
+      <div class="notifications-list" id="notificationsList">
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </div>
+        <div class="footer-copyright">
+          &copy; 2025 TradePulse Pro | Version 2.1.0
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
